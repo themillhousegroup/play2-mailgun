@@ -1,7 +1,10 @@
 play2-mailgun
 ============================
 
-Project info goes here
+Features:
+	- Requires no extra dependencies (uses Play Framework libraries only)
+  - Super-easy to wire in (just add two values to `application.conf`)
+  - Send plain-text and/or HTML emails _with the one Twirl template_
 
 
 ### Installation
@@ -36,6 +39,10 @@ baz
 
 
 ### Still To-Do
+Ummm, all of it.
 
 ### Credits
+https://github.com/playframework/playframework/issues/902
+http://stackoverflow.com/questions/10890362/play-2-0-how-to-post-multipartformdata-using-ws-url-or-ws-wsrequest
+http://www.mailgun.com/ 
 
