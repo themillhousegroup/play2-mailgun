@@ -9,6 +9,8 @@ Features:
 
 ### Installation
 
+__NOTE: This library is NOT ready for production use, so there is no artifact available yet.__
+
 Bring in the library by adding the following to your ```build.sbt```. 
 
   - The release repository: 
