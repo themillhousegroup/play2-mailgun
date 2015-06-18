@@ -4,6 +4,9 @@ import play.api.libs.concurrent.Execution.Implicits._
 import play.api.{ Logger, Play }
 import scala.concurrent.Future
 import org.apache.commons.lang3.StringUtils
+import play.api.libs.ws._
+
+import com.ning.http.multipart.{ FilePart, MultipartRequestEntity, Part }
 
 object EmailService extends EmailService(
   Play.current.configuration.getString("mailgun.api.key").get,

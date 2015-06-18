@@ -10,7 +10,7 @@ crossScalaVersions := Seq("2.11.2", "2.10.4")
 organization := "com.themillhousegroup"
 
 libraryDependencies ++= Seq(
-		"com.typesafe.play"           %%  "play"                  % "2.3.8"       % "provided",
+		"com.typesafe.play"           %%  "play-ws"               % "2.3.8"       % "provided",
     "org.mockito"                 %   "mockito-all"           % "1.9.0"       % "test",
     "org.specs2"                  %%  "specs2"                % "2.3.12"      % "test"
 )
