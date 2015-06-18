@@ -15,7 +15,14 @@ class EmailService(val mailgunApiKey: String, val mailgunApiUrl: String, val def
   //client.addFilter(new HTTPBasicAuthFilter("api", mailgunApiKey))
   //val webResource = client.resource(mailgunApiUrl)
 
-  def send(message: EmailMessage): Future[Option[String]] = Future {
+  def send(message: EssentialEmailMessage): Future[Option[String]] = Future {
+
+    if (defaultSender.isEmpty && message.from.isEmpty) {
+      Future.failed(new IllegalStateException("From: field is None and no default sender configured"))
+    }
+
+    val sender = message.from.getOrElse(defaultSender)
+
     /*
     val form = new FormDataMultiPart
     form.field("from", message.from)
