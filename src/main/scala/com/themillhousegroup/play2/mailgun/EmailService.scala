@@ -5,15 +5,16 @@ import play.api.{ Logger, Play }
 import scala.concurrent.Future
 import org.apache.commons.lang3.StringUtils
 import play.api.libs.ws._
+import play.api.Play.current
 
 import com.ning.http.multipart.{ FilePart, MultipartRequestEntity, Part }
 
 object EmailService extends EmailService(
   Play.current.configuration.getString("mailgun.api.key").get,
-  Play.current.configuration.getString("mailgun.api.url").get,
-  Play.current.configuration.getString("mailgun.default.sender"))
+  Play.current.configuration.getString("mailgun.default.sender"))(
+  WS.url(Play.current.configuration.getString("mailgun.api.url").get))
 
-class EmailService(val mailgunApiKey: String, val mailgunApiUrl: String, val defaultSender: Option[String]) {
+class EmailService(val mailgunApiKey: String, val defaultSender: Option[String])(val ws: WSRequestHolder) {
 
   //client.addFilter(new HTTPBasicAuthFilter("api", mailgunApiKey))
   //val webResource = client.resource(mailgunApiUrl)
