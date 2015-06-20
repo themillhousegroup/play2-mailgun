@@ -1,7 +1,7 @@
 package com.themillhousegroup.play2.mailgun
 
 import play.api.libs.concurrent.Execution.Implicits._
-import play.api.{ Logger, Play }
+import play.api.{ Play }
 import scala.concurrent.Future
 import org.apache.commons.lang3.StringUtils
 import play.api.http._
@@ -18,15 +18,12 @@ object EmailService extends EmailService(
   Play.current.configuration.getString("mailgun.default.sender"))(
   WS.url(Play.current.configuration.getString("mailgun.api.url").get))
 
-class EmailService(val mailgunApiKey: String, val defaultSender: Option[String])(val ws: WSRequestHolder) {
+class EmailService(val mailgunApiKey: String, val defaultSender: Option[String])(val ws: WSRequestHolder) extends MailgunResponseJson {
 
-  //client.addFilter(new HTTPBasicAuthFilter("api", mailgunApiKey))
-  //val webResource = client.resource(mailgunApiUrl)
-
-  def send(message: EssentialEmailMessage): Future[Option[String]] = {
+  def send(message: EssentialEmailMessage): Future[MailgunResponse] = {
 
     if (defaultSender.isEmpty && message.from.isEmpty) {
-      Future.failed[Option[String]](new IllegalStateException("From: field is None and no default sender configured"))
+      Future.failed(new IllegalStateException("From: field is None and no default sender configured"))
     } else {
       val sender = message.from.getOrElse(defaultSender.get)
 
@@ -50,7 +47,7 @@ class EmailService(val mailgunApiKey: String, val defaultSender: Option[String])
       val contentType = mpre.getContentType
 
       ws.post(bytes)(Writeable.wBytes, ContentTypeOf(Some(contentType))).map { response =>
-        Option(StringUtils.trimToNull(message.to))
+        response.json.as[MailgunResponse]
 
       }
     }
