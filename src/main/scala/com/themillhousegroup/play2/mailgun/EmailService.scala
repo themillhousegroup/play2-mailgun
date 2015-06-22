@@ -43,12 +43,11 @@ class EmailService(val mailgunApiKey: String, val defaultSender: Option[String])
       val mpre = new MultipartRequestEntity(parts, new FluentCaseInsensitiveStringsMap)
       val baos = new ByteArrayOutputStream
       mpre.writeRequest(baos)
-      val bytes = baos.toByteArray
+      val bytes: Array[Byte] = baos.toByteArray
       val contentType = mpre.getContentType
 
       ws.post(bytes)(Writeable.wBytes, ContentTypeOf(Some(contentType))).map { response =>
         response.json.as[MailgunResponse]
-
       }
     }
   }
