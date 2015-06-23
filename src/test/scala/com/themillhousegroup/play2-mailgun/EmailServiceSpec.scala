@@ -22,7 +22,7 @@ class EmailServiceSpec extends Specification with Mockito {
 
   val noSenderEmailMessage = EmailMessage(None, "to@to.com", "subject", "text", Html("<em>text</em>"))
   val senderEmailMessage = EmailMessage(Some("from@from.com"), "to@to.com", "subject", "text", Html("<em>text</em>"))
-  val emailService = new EmailService("apiKey", None)(mockWS)
+  val emailService = new MailgunEmailService("apiKey", None)(mockWS)
 
   "EmailService" should {
     "Bomb out if no default from address and none in supplied message" in {

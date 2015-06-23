@@ -13,12 +13,12 @@ import java.io.ByteArrayOutputStream
 
 import com.ning.http.multipart.{ FilePart, MultipartRequestEntity, Part }
 
-object EmailService extends EmailService(
+object MailgunEmailService extends MailgunEmailService(
   Play.current.configuration.getString("mailgun.api.key").get,
   Play.current.configuration.getString("mailgun.default.sender"))(
   WS.url(Play.current.configuration.getString("mailgun.api.url").get))
 
-class EmailService(val mailgunApiKey: String, val defaultSender: Option[String])(val ws: WSRequestHolder) extends MailgunResponseJson {
+class MailgunEmailService(val mailgunApiKey: String, val defaultSender: Option[String])(val ws: WSRequestHolder) extends MailgunResponseJson {
 
   def send(message: EssentialEmailMessage): Future[MailgunResponse] = {
 
