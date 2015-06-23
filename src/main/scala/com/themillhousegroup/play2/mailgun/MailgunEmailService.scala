@@ -46,9 +46,10 @@ class MailgunEmailService(val mailgunApiKey: String, val defaultSender: Option[S
       val bytes: Array[Byte] = baos.toByteArray
       val contentType = mpre.getContentType
 
-      ws.post(bytes)(Writeable.wBytes, ContentTypeOf(Some(contentType))).map { response =>
-        response.json.as[MailgunResponse]
-      }
+      ws.withAuth("api", mailgunApiKey, WSAuthScheme.BASIC)
+        .post(bytes)(Writeable.wBytes, ContentTypeOf(Some(contentType))).map { response =>
+          response.json.as[MailgunResponse]
+        }
     }
   }
 }
