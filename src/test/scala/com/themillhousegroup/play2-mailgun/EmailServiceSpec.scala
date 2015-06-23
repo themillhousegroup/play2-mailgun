@@ -18,6 +18,7 @@ class EmailServiceSpec extends Specification with Mockito {
   val mockWS = mock[WSRequestHolder]
   val mockResponse = mock[WSResponse]
   mockResponse.json returns Json.obj("message" -> "OK", "id" -> "abc123")
+  mockWS.withAuth(any[String], any[String], any[WSAuthScheme]) returns mockWS
   mockWS.post[Array[Byte]](any[Array[Byte]])(any[Writeable[Array[Byte]]], any[ContentTypeOf[Array[Byte]]]) returns Future.successful(mockResponse)
 
   val noSenderEmailMessage = EmailMessage(None, "to@to.com", "subject", "text", Html("<em>text</em>"))
