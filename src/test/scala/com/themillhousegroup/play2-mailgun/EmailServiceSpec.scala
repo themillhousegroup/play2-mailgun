@@ -10,6 +10,8 @@ import play.api.libs.json._
 import scala.concurrent.Future
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import org.apache.commons.fileupload._
+import com.ning.http.multipart._
 
 class EmailServiceSpec extends Specification with Mockito {
   val timeout = Duration(10, "seconds")
@@ -31,15 +33,34 @@ class EmailServiceSpec extends Specification with Mockito {
       val response = Await.result(emailService.send(senderEmailMessage), timeout)
       response must beEqualTo(MailgunResponse("OK", "abc123"))
 
-      val captor = ArgumentCaptor.forClass(classOf[Array[Byte]])
+      val byteCaptor = ArgumentCaptor.forClass(classOf[Array[Byte]])
+      val contentTypeCaptor = ArgumentCaptor.forClass(classOf[ContentTypeOf[Array[Byte]]])
 
       val expected = List[Byte](77, 77, 88, 88, 99).toArray
-      there was one(mockWS).post(captor.capture())(any[Writeable[Array[Byte]]], any[ContentTypeOf[Array[Byte]]])
+      there was one(mockWS).post(byteCaptor.capture())(any[Writeable[Array[Byte]]], contentTypeCaptor.capture())
 
-      val theBytes = captor.getValue
+      val theBytes = byteCaptor.getValue
       println(new String(theBytes))
 
       theBytes must not beNull
+
+      val fu = new FileUpload(new org.apache.commons.fileupload.disk.DiskFileItemFactory())
+      val ctx = new UploadContext {
+        def getCharacterEncoding = "UTF-8"
+
+        def getContentType = contentTypeCaptor.getValue.mimeType.get
+
+        def getContentLength = contentLength.toInt
+        def contentLength = theBytes.length
+
+        def getInputStream: java.io.InputStream = {
+          new java.io.ByteArrayInputStream(theBytes)
+        }
+      }
+      val multipartItems = fu.parseRequest(ctx)
+
+      multipartItems.size must beEqualTo(5)
+
     }
   }
 }

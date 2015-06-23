@@ -12,7 +12,11 @@ organization := "com.themillhousegroup"
 libraryDependencies ++= Seq(
 		"com.typesafe.play"           %%  "play-ws"               % "2.3.8"       % "provided",
     "org.mockito"                 %   "mockito-all"           % "1.9.0"       % "test",
-    "org.specs2"                  %%  "specs2"                % "2.3.12"      % "test"
+    "org.specs2"                  %%  "specs2"                % "2.3.12"      % "test",
+		"commons-fileupload" 					% 	"commons-fileupload" 		% "1.3.1"       % "test",
+		"javax.servlet" 							% 	"javax.servlet-api" 		% "3.0.1"       % "test"
+
+
 )
 
 resolvers ++= Seq(  "oss-snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
