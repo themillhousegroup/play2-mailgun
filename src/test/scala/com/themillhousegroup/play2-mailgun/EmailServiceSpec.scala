@@ -20,14 +20,14 @@ class EmailServiceSpec extends Specification with Mockito {
   val noSenderEmailMessage = EmailMessage(None, "to@to.com", "subject", "text", Html("<em>text</em>"))
   val senderEmailMessage = EmailMessage(Some("from@from.com"), "to@to.com", "subject", "text", Html("<em>text</em>"))
 
-  def givenAnEmailServiceThatReturns(statusCode: Int, message: String = "OK"): (MailgunEmailService, WSRequestHolder) = {
+  def givenAnEmailServiceThatReturns(statusCode: Int, message: String = "OK", defaultSender: Option[String] = None): (MailgunEmailService, WSRequestHolder) = {
     val mockWS = mock[WSRequestHolder]
     val mockResponse = mock[WSResponse]
     mockResponse.json returns Json.obj("message" -> message, "id" -> "abc123")
     mockResponse.status returns statusCode
     mockWS.withAuth(any[String], any[String], any[WSAuthScheme]) returns mockWS
     mockWS.post[Array[Byte]](any[Array[Byte]])(any[Writeable[Array[Byte]]], any[ContentTypeOf[Array[Byte]]]) returns Future.successful(mockResponse)
-    (new MailgunEmailService("apiKey", None)(mockWS), mockWS)
+    (new MailgunEmailService("apiKey", defaultSender)(mockWS), mockWS)
   }
 
   def whenTheServiceSends(emailService: MailgunEmailService, msg: EssentialEmailMessage) = {
@@ -89,6 +89,20 @@ class EmailServiceSpec extends Specification with Mockito {
       fieldNames must contain("from")
       val fromField = multipartItems.find(_.getFieldName == "from").get
       fromField.getString must beEqualTo("from@from.com")
+    }
+
+    "Use the default sender if not supplied from the message " in {
+      val (emailService, mockWS) = givenAnEmailServiceThatReturns(200, "OK", Some("default-sender@from.com"))
+      val response = whenTheServiceSends(emailService, noSenderEmailMessage)
+      response must beEqualTo(MailgunResponse("OK", "abc123"))
+
+      val multipartItems = andMailgunShouldReceive(mockWS)
+
+      multipartItems.size must beEqualTo(5)
+      val fieldNames = multipartItems.map(_.getFieldName)
+      fieldNames must contain("from")
+      val fromField = multipartItems.find(_.getFieldName == "from").get
+      fromField.getString must beEqualTo("default-sender@from.com")
     }
   }
 }
