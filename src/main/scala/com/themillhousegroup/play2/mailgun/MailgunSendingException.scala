@@ -1,5 +1,6 @@
 package com.themillhousegroup.play2.mailgun
 
-class MailgunSendingException {
-
-}
+/**
+ * Represents a problem returned by the Mailgun sending API
+ */
+class MailgunSendingException(msg: String) extends RuntimeException(msg)

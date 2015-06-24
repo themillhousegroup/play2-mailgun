@@ -12,6 +12,7 @@ import com.ning.http.multipart._
 import java.io.ByteArrayOutputStream
 
 import com.ning.http.multipart.{ FilePart, MultipartRequestEntity, Part }
+import play.api.libs.json
 
 object MailgunEmailService extends MailgunEmailService(
   Play.current.configuration.getString("mailgun.api.key").get,
@@ -47,8 +48,12 @@ class MailgunEmailService(val mailgunApiKey: String, val defaultSender: Option[S
       val contentType = mpre.getContentType
 
       ws.withAuth("api", mailgunApiKey, WSAuthScheme.BASIC)
-        .post(bytes)(Writeable.wBytes, ContentTypeOf(Some(contentType))).map { response =>
-          response.json.as[MailgunResponse]
+        .post(bytes)(Writeable.wBytes, ContentTypeOf(Some(contentType))).flatMap { response =>
+          if (response.status == Status.OK) {
+            Future.successful(response.json.as[MailgunResponse])
+          } else {
+            Future.failed(new MailgunSendingException((response.json \ "message").as[String]))
+          }
         }
     }
   }
