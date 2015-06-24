@@ -10,11 +10,10 @@ import play.api.libs.json._
 import scala.concurrent.Future
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import org.apache.commons.fileupload._
-import com.ning.http.multipart._
-import org.jboss.netty.handler.codec.http.multipart.FileUpload
+import org.apache.commons.fileupload.disk._
 import scala.Predef._
 import scala.Some
+import org.apache.commons.fileupload.{ UploadContext, FileUpload, FileItem }
 
 class EmailServiceSpec extends Specification with Mockito {
 
@@ -37,7 +36,7 @@ class EmailServiceSpec extends Specification with Mockito {
     Await.result(emailService.send(msg), timeout)
   }
 
-  def andMailgunShouldReceive(ws: WSRequestHolder): List[org.apache.commons.fileupload.FileItem] = {
+  def andMailgunShouldReceive(ws: WSRequestHolder): List[FileItem] = {
     import scala.collection.JavaConverters._
 
     val byteCaptor = ArgumentCaptor.forClass(classOf[Array[Byte]])
@@ -49,7 +48,7 @@ class EmailServiceSpec extends Specification with Mockito {
 
     println(new String(theBytes))
 
-    val fu = new org.apache.commons.fileupload.FileUpload(new org.apache.commons.fileupload.disk.DiskFileItemFactory())
+    val fu = new FileUpload(new DiskFileItemFactory())
     val ctx = new UploadContext {
       def getCharacterEncoding = "UTF-8"
 
@@ -86,6 +85,10 @@ class EmailServiceSpec extends Specification with Mockito {
       val multipartItems = andMailgunShouldReceive(mockWS)
 
       multipartItems.size must beEqualTo(5)
+      val fieldNames = multipartItems.map(_.getFieldName)
+      fieldNames must contain("from")
+      val fromField = multipartItems.find(_.getFieldName == "from").get
+      fromField.getString must beEqualTo("from@from.com")
     }
   }
 }
