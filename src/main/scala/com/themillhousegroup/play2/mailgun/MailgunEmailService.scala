@@ -27,34 +27,55 @@ class MailgunEmailService(val mailgunApiKey: String, val defaultSender: Option[S
       Future.failed(new IllegalStateException("From: field is None and no default sender configured"))
     } else {
       val sender = message.from.getOrElse(defaultSender.get)
-
-      //    val logo = Play.getExistingFile("/public/images/logo.png").get
-      //    form.bodyPart(new FileDataBodyPart("inline", logo, MediaType.APPLICATION_OCTET_STREAM_TYPE))
-
-      // Use the Ning AsyncHttpClient multipart class to get the bytes
-      val parts = Array[Part](
-        new StringPart("from", sender),
-        new StringPart("to", message.to),
-        new StringPart("subject", message.subject),
-        new StringPart("text", message.text),
-        new StringPart("html", message.html.toString())
-      )
-      //      new FilePart("attachment", file)
-
-      val mpre = new MultipartRequestEntity(parts, new FluentCaseInsensitiveStringsMap)
-      val baos = new ByteArrayOutputStream
-      mpre.writeRequest(baos)
-      val bytes: Array[Byte] = baos.toByteArray
-      val contentType = mpre.getContentType
+      val mpre = buildMultipartRequest(sender, message)
 
       ws.withAuth("api", mailgunApiKey, WSAuthScheme.BASIC)
-        .post(bytes)(Writeable.wBytes, ContentTypeOf(Some(contentType))).flatMap { response =>
-          if (response.status == Status.OK) {
-            Future.successful(response.json.as[MailgunResponse])
-          } else {
-            Future.failed(new MailgunSendingException((response.json \ "message").as[String]))
-          }
-        }
+        .post(requestBytes(mpre))(Writeable.wBytes, contentType(mpre)).flatMap(handleMailgunResponse)
     }
+  }
+
+  private def buildMultipartRequest(sender: String, message: EssentialEmailMessage): MultipartRequestEntity = {
+    //    val logo = Play.getExistingFile("/public/images/logo.png").get
+    //    form.bodyPart(new FileDataBodyPart("inline", logo, MediaType.APPLICATION_OCTET_STREAM_TYPE))
+
+    // Use the Ning AsyncHttpClient multipart class to get the bytes
+    val parts = Array[Part](
+      new StringPart("from", sender),
+      new StringPart("to", message.to),
+      new StringPart("subject", message.subject),
+      new StringPart("text", message.text),
+      new StringPart("html", message.html.toString())
+    )
+    //      new FilePart("attachment", file)
+
+    new MultipartRequestEntity(parts, new FluentCaseInsensitiveStringsMap)
+  }
+
+  private def requestBytes(mpre: MultipartRequestEntity): Array[Byte] = {
+    val baos = new ByteArrayOutputStream
+    mpre.writeRequest(baos)
+    baos.toByteArray
+  }
+
+  private def contentType(mpre: MultipartRequestEntity) = {
+    val contentType = mpre.getContentType
+    ContentTypeOf(Some(contentType))
+  }
+
+  /**
+   * As per https://documentation.mailgun.com/api-intro.html#errors
+   */
+  private def handleMailgunResponse(response: WSResponse): Future[MailgunResponse] = {
+    if (response.status == Status.OK) {
+      Future.successful(response.json.as[MailgunResponse])
+    } else {
+      Future.failed(
+        response.status match {
+          case Status.UNAUTHORIZED => new MailgunAuthenticationException((response.json \ "message").as[String])
+          case _ => new MailgunSendingException((response.json \ "message").as[String])
+        }
+      )
+    }
+
   }
 }
