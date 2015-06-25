@@ -70,10 +70,16 @@ class EmailServiceSpec extends Specification with Mockito {
       whenTheServiceSends(emailService, noSenderEmailMessage) must throwAn[IllegalStateException]
     }
 
-    "Bomb out with MailgunSendingException wrapping the message if remote API doesn't return a 200" in {
+    "Bomb out with MailgunAuthenticationException wrapping the message if remote API returns a 401" in {
       val (emailService, _) = givenAnEmailServiceThatReturns(401, "Unauthorized - No valid API key provided")
 
-      whenTheServiceSends(emailService, senderEmailMessage) must throwAn[MailgunSendingException]("Unauthorized - No valid API key provided")
+      whenTheServiceSends(emailService, senderEmailMessage) must throwAn[MailgunAuthenticationException]("Unauthorized - No valid API key provided")
+    }
+
+    "Bomb out with MailgunSendingException wrapping the message if remote API returns some other status" in {
+      val (emailService, _) = givenAnEmailServiceThatReturns(400, "Bad Request")
+
+      whenTheServiceSends(emailService, senderEmailMessage) must throwAn[MailgunSendingException]("Bad Request")
     }
 
     "Use the sender from the message if supplied" in {
