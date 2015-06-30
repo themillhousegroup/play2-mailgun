@@ -41,10 +41,10 @@ baz
 
 
 ### Still To-Do
-Ummm, all of it.
+Use one custom template (with `.scala.email` extension) to define both plain text and HTML message bodies.
 
 ### Credits
 https://github.com/playframework/playframework/issues/902
 http://stackoverflow.com/questions/10890362/play-2-0-how-to-post-multipartformdata-using-ws-url-or-ws-wsrequest
 http://www.mailgun.com/ 
-
+https://www.playframework.com/documentation/2.3.x/ScalaCustomTemplateFormat
