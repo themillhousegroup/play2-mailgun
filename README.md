@@ -2,14 +2,13 @@ play2-mailgun
 ============================
 
 Features:
-	- Requires no extra dependencies (uses Play Framework libraries only)
+
+  - Requires no extra dependencies (uses Play Framework libraries only)
   - Super-easy to wire in (just add two values to `application.conf`)
-  - Send plain-text and/or HTML emails _with the one Twirl template_
+  - Send plain-text and/or HTML emails _with the one Twirl template_ (not finished yet)
 
 
 ### Installation
-
-__NOTE: This library is NOT ready for production use, so there is no artifact available yet.__
 
 Bring in the library by adding the following to your ```build.sbt```. 
 
@@ -24,7 +23,7 @@ Bring in the library by adding the following to your ```build.sbt```.
 
 ```
    libraryDependencies ++= Seq(
-     "com.themillhousegroup" %% "play2-mailgun" % "0.1.0"
+     "com.themillhousegroup" %% "play2-mailgun" % "0.1.16"
    )
 
 ```
@@ -33,12 +32,46 @@ Bring in the library by adding the following to your ```build.sbt```.
 
 Once you have __play2-mailgun__ added to your project, you can start using it like this:
 
+#### Put your Mailgun credentials into `application.conf`
+You need the following two entries:
+
 ```
-foo
-bar
-baz 
+mailgun.api.key=key-abcdef123456abcdef123456abc12345
+mailgun.api.url="https://api.mailgun.net/v3/mg.example.com/messages"
 ```
 
+#### Build an `EmailMessage` containing your email content
+Supply plain text _and_ HTML versions of your message:
+
+```
+import com.themillhousegroup.play2.mailgun.EmailMessage
+import play.twirl.api.Html
+
+val plainText = "This is the plain text"
+
+val html = Html("<h5>This is <em>actual</em><strong>HTML!</strong></h5>")
+
+val m = EmailMessage(
+      Some("donotreply@example.com"),
+      "destination@example.com"",
+      "This is the subject",
+      plainText,
+      html
+    )
+```
+
+#### Pass the `EmailMessage` to `MailgunEmailService.send()`
+It returns a `Future[MailgunResponse]` (which you can ignore if you don't care):
+
+```
+import com.themillhousegroup.play2.mailgun.MailgunEmailService
+
+MailgunEmailService.send(m).map { mailgunResponse =>
+	s"id: ${mailgunResponse.id} - message: ${mailgunResponse.message}"
+}
+
+
+```
 
 ### Still To-Do
 Use one custom template (with `.scala.email` extension) to define both plain text and HTML message bodies.
