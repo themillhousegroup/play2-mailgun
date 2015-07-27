@@ -7,6 +7,9 @@ Features:
   - Super-easy to wire in (just add two values to `application.conf`)
   - Send plain-text and/or HTML emails _with the one Twirl template_ (not finished yet)
 
+[![Build Status](https://travis-ci.org/themillhousegroup/play2-mailgun.svg?branch=master)](https://travis-ci.org/themillhousegroup/play2-mailgun)
+
+
 
 ### Installation
 
