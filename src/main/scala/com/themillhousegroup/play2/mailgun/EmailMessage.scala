@@ -1,5 +1,7 @@
 package com.themillhousegroup.play2.mailgun
 
+import java.io.File
+
 /**
  * The bare minimum of a MailGun API email message.
  * Basically a simplified representation of
@@ -13,12 +15,14 @@ trait EssentialEmailMessage {
   val subject: String
   val text: String
   val html: play.twirl.api.Html
+  val attachments: List[(String, File)]
 }
 
 /**
  * An EssentialEmailMessage
  * which is easy to use for the (arguably) most-common use case
- * of sending to exactly one recipient in the to: field.
+ * of sending to exactly one recipient in the to: field,
+ * with no attachments.
  */
 case class EmailMessage(
     from: Option[String],
@@ -28,6 +32,7 @@ case class EmailMessage(
     html: play.twirl.api.Html) extends EssentialEmailMessage {
   val cc = None
   val bcc = None
+  val attachments = List()
 }
 
 /**
@@ -48,4 +53,5 @@ case class MulticastEmailMessage(
   val to = tos.mkString(", ")
   val cc = ccs.headOption.map(_ => ccs.mkString(", "))
   val bcc = bccs.headOption.map(_ => ccs.mkString(", "))
+  val attachments = List()
 }
