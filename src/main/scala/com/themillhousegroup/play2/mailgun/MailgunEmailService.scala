@@ -21,20 +21,21 @@ object MailgunEmailService extends MailgunEmailService(
 
 class MailgunEmailService(val mailgunApiKey: String, val defaultSender: Option[String])(val ws: WSRequestHolder) extends MailgunResponseJson {
 
-  def send(message: EssentialEmailMessage): Future[MailgunResponse] = {
+  /** Sends the message via Mailgun's API, respecting any options provided */
+  def send(message: EssentialEmailMessage, options: Set[MailgunOption] = Set()): Future[MailgunResponse] = {
 
     if (defaultSender.isEmpty && message.from.isEmpty) {
       Future.failed(new IllegalStateException("From: field is None and no default sender configured"))
     } else {
       val sender = message.from.getOrElse(defaultSender.get)
-      val mpre = buildMultipartRequest(sender, message)
+      val mpre = buildMultipartRequest(sender, message, options)
 
       ws.withAuth("api", mailgunApiKey, WSAuthScheme.BASIC)
         .post(requestBytes(mpre))(Writeable.wBytes, contentType(mpre)).flatMap(handleMailgunResponse)
     }
   }
 
-  private def buildMultipartRequest(sender: String, message: EssentialEmailMessage): MultipartRequestEntity = {
+  private def buildMultipartRequest(sender: String, message: EssentialEmailMessage, options: Set[MailgunOption]): MultipartRequestEntity = {
     //    val logo = Play.getExistingFile("/public/images/logo.png").get
     //    form.bodyPart(new FileDataBodyPart("inline", logo, MediaType.APPLICATION_OCTET_STREAM_TYPE))
 
@@ -48,7 +49,11 @@ class MailgunEmailService(val mailgunApiKey: String, val defaultSender: Option[S
     )
     //      new FilePart("attachment", file)
 
-    new MultipartRequestEntity(parts, new FluentCaseInsensitiveStringsMap)
+    new MultipartRequestEntity(addOptions(parts, options), new FluentCaseInsensitiveStringsMap)
+  }
+
+  private def addOptions(basicParts: Array[Part], options: Set[MailgunOption]): Array[Part] = {
+    basicParts
   }
 
   private def requestBytes(mpre: MultipartRequestEntity): Array[Byte] = {
