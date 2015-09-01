@@ -30,10 +30,10 @@ class EmailServiceSpec extends Specification with Mockito {
     (new MailgunEmailService("apiKey", defaultSender)(mockWS), mockWS)
   }
 
-  def whenTheServiceSends(emailService: MailgunEmailService, msg: EssentialEmailMessage) = {
+  def whenTheServiceSends(emailService: MailgunEmailService, msg: EssentialEmailMessage, options: Set[MailgunOption] = Set()) = {
     val timeout = Duration(10, "seconds")
 
-    Await.result(emailService.send(msg), timeout)
+    Await.result(emailService.send(msg, options), timeout)
   }
 
   def andMailgunShouldReceive(ws: WSRequestHolder): List[FileItem] = {
@@ -46,7 +46,7 @@ class EmailServiceSpec extends Specification with Mockito {
     val theBytes = byteCaptor.getValue
     theBytes must not beNull
 
-    println(new String(theBytes))
+    //println(new String(theBytes))
 
     val fu = new FileUpload(new DiskFileItemFactory())
     val ctx = new UploadContext {
@@ -109,6 +109,26 @@ class EmailServiceSpec extends Specification with Mockito {
       fieldNames must contain("from")
       val fromField = multipartItems.find(_.getFieldName == "from").get
       fromField.getString must beEqualTo("default-sender@from.com")
+    }
+  }
+
+  "Option support" should {
+    "Pass through the appropriate form part for the 'testmode' option" in {
+      val (emailService, mockWS) = givenAnEmailServiceThatReturns(200)
+
+      val response = whenTheServiceSends(emailService, senderEmailMessage, Set(SendInTestMode))
+      response must beEqualTo(MailgunResponse("OK", "abc123"))
+
+      val multipartItems = andMailgunShouldReceive(mockWS)
+
+      multipartItems must not beEmpty
+
+      multipartItems.filter(_.getFieldName == "subject") must not beEmpty // Sanity check
+
+      val testModePart = multipartItems.find(_.getFieldName == "o:testmode")
+      testModePart must not beNone
+
+      testModePart.get.getString must beEqualTo("true")
     }
   }
 }

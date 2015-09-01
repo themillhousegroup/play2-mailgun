@@ -2,6 +2,7 @@ package com.themillhousegroup.play2.mailgun
 
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.{ Play }
+import play.api.Logger
 import scala.concurrent.Future
 import org.apache.commons.lang3.StringUtils
 import play.api.http._
@@ -53,7 +54,10 @@ class MailgunEmailService(val mailgunApiKey: String, val defaultSender: Option[S
   }
 
   private def addOptions(basicParts: Array[Part], options: Set[MailgunOption]): Array[Part] = {
-    basicParts
+    basicParts ++ options.map { o =>
+      Logger.debug(s"Adding option $o: ${o.renderAsApiParameter}")
+      o.renderAsApiParameter
+    }
   }
 
   private def requestBytes(mpre: MultipartRequestEntity): Array[Byte] = {
