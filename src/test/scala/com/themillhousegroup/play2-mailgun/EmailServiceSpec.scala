@@ -130,5 +130,27 @@ class EmailServiceSpec extends Specification with Mockito {
 
       testModePart.get.getString must beEqualTo("true")
     }
+
+    "Pass through the appropriate form part for the 'deliverytime' option" in {
+      val (emailService, mockWS) = givenAnEmailServiceThatReturns(200)
+
+      val nowMillis = System.currentTimeMillis
+      val inOneMinute = nowMillis + 60000
+      val sendInOneMinute = ScheduledSendAt(inOneMinute)
+
+      val response = whenTheServiceSends(emailService, senderEmailMessage, Set(sendInOneMinute))
+      response must beEqualTo(MailgunResponse("OK", "abc123"))
+
+      val multipartItems = andMailgunShouldReceive(mockWS)
+
+      multipartItems must not beEmpty
+
+      multipartItems.filter(_.getFieldName == "subject") must not beEmpty // Sanity check
+
+      val delTimePart = multipartItems.find(_.getFieldName == "o:deliverytime")
+      delTimePart must not beNone
+
+      delTimePart.get.getString must beEqualTo(inOneMinute.toString)
+    }
   }
 }

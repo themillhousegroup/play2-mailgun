@@ -10,6 +10,6 @@ case object SendInTestMode extends MailgunOption {
   def renderAsApiParameter: Part = new StringPart("o:testmode", "true")
 }
 
-case class ScheduledSendAt(date: java.util.Date) extends MailgunOption {
-  def renderAsApiParameter: Part = new StringPart("o:deliverytime", date.getTime.toString)
+case class ScheduledSendAt(dateInMillis: Long) extends MailgunOption {
+  def renderAsApiParameter: Part = new StringPart("o:deliverytime", dateInMillis.toString)
 }
