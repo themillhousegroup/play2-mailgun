@@ -3,6 +3,8 @@ name := "play2-mailgun"
 // If the CI supplies a "build.version" environment variable, inject it as the rev part of the version number:
 version := s"${sys.props.getOrElse("build.majorMinor", "0.1")}.${sys.props.getOrElse("build.version", "SNAPSHOT")}"
 
+lazy val templating = project.in(file("templating"))
+
 scalaVersion := "2.11.7"
 
 crossScalaVersions := Seq("2.11.7", "2.10.5")
