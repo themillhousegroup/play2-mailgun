@@ -1,10 +1,11 @@
 package com.themillhousegroup.play2.mailgun.templating
 
 import play.twirl.api._
+import com.themillhousegroup.scoup.Scoup
 
 class DualFormatEmail(buffer: String) extends BufferedContent[DualFormatEmail](scala.collection.immutable.Seq[DualFormatEmail](), buffer) {
   val contentType = MimeTypes.HTML
-	def toPlainText:String = buffer
+	lazy val toPlainText:String = Scoup.parseHTML(buffer).text
 }
 
 object DualFormat extends Format[DualFormatEmail] {
