@@ -56,7 +56,7 @@ val html = Html("<h5>This is <em>actual</em><strong>HTML!</strong></h5>")
 
 val m = EmailMessage(
       Some("donotreply@example.com"),
-      "destination@example.com"",
+      "destination@example.com",
       "This is the subject",
       plainText,
       html
