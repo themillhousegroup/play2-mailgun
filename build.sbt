@@ -1,7 +1,7 @@
 name := "play2-mailgun"
 
 val deps = Seq(
-		"com.typesafe.play"           %%  "play-ws"               % "2.3.10"      % "provided",
+		"com.typesafe.play"           %%  "play-ws"               % "2.4.4"       % "provided",
     "org.mockito"                 %   "mockito-all"           % "1.10.19"     % "test",
     "org.specs2"                  %%  "specs2"                % "2.3.13"      % "test",
 		"commons-fileupload" 					% 	"commons-fileupload" 		% "1.3.1"       % "test",
@@ -11,7 +11,7 @@ val deps = Seq(
 lazy val commonSettings = Seq(
 	organization := "com.themillhousegroup",
 	// If the CI supplies a "build.version" environment variable, inject it as the rev part of the version number:
-	version := s"${sys.props.getOrElse("build.majorMinor", "0.1")}.${sys.props.getOrElse("build.version", "SNAPSHOT")}",
+	version := s"${sys.props.getOrElse("build.majorMinor", "0.2")}.${sys.props.getOrElse("build.version", "SNAPSHOT")}",
 	scalaVersion := "2.11.7",
 	crossScalaVersions := Seq("2.11.7", "2.10.5"),
 	libraryDependencies ++= deps
