@@ -1,6 +1,6 @@
 package com.themillhousegroup.play2.mailgun
 
-import com.ning.http.multipart._
+import com.ning.http.client.multipart._
 
 sealed trait MailgunOption {
   def renderAsApiParameter: Part

@@ -9,10 +9,11 @@ import play.api.http._
 import play.api.libs.ws._
 import play.api.Play.current
 import com.ning.http.client.FluentCaseInsensitiveStringsMap
-import com.ning.http.multipart._
+import com.ning.http.client.multipart._
 import java.io.ByteArrayOutputStream
 
-import com.ning.http.multipart.{ FilePart, MultipartRequestEntity, Part }
+import com.ning.http.client.providers.jdk.MultipartRequestEntity
+import com.ning.http.client.multipart.{ FilePart, Part }
 import play.api.libs.json
 
 /** For static-style usage: */
@@ -21,7 +22,7 @@ object MailgunEmailService extends MailgunEmailService
 class MailgunEmailService extends MailgunResponseJson {
   lazy val mailgunApiKey: String = Play.current.configuration.getString("mailgun.api.key").get
   lazy val defaultSender: Option[String] = Play.current.configuration.getString("mailgun.default.sender")
-  lazy val ws: WSRequestHolder = WS.url(Play.current.configuration.getString("mailgun.api.url").get)
+  lazy val ws: WSRequest = WS.url(Play.current.configuration.getString("mailgun.api.url").get)
 
   /** Sends the message via Mailgun's API, respecting any options provided */
   def send(message: EssentialEmailMessage, options: Set[MailgunOption] = Set()): Future[MailgunResponse] = {
@@ -33,16 +34,18 @@ class MailgunEmailService extends MailgunResponseJson {
       val mpre = buildMultipartRequest(sender, message, options)
 
       ws.withAuth("api", mailgunApiKey, WSAuthScheme.BASIC)
-        .post(requestBytes(mpre))(Writeable.wBytes, contentType(mpre)).flatMap(handleMailgunResponse)
+        .post(requestBytes(mpre))(Writeable.wBytes).flatMap(handleMailgunResponse)
+      //.post(requestBytes(mpre))(Writeable.wBytes, contentType(mpre)).flatMap(handleMailgunResponse)
     }
   }
 
   private def buildMultipartRequest(sender: String, message: EssentialEmailMessage, options: Set[MailgunOption]): MultipartRequestEntity = {
     //    val logo = Play.getExistingFile("/public/images/logo.png").get
     //    form.bodyPart(new FileDataBodyPart("inline", logo, MediaType.APPLICATION_OCTET_STREAM_TYPE))
+    import scala.collection.JavaConverters._
 
     // Use the Ning AsyncHttpClient multipart class to get the bytes
-    val parts = Array[Part](
+    val parts = List[Part](
       new StringPart("from", sender),
       new StringPart("to", message.to),
       new StringPart("subject", message.subject),
@@ -51,10 +54,10 @@ class MailgunEmailService extends MailgunResponseJson {
     )
     //      new FilePart("attachment", file)
 
-    new MultipartRequestEntity(addOptions(parts, options), new FluentCaseInsensitiveStringsMap)
+    new MultipartRequestEntity(addOptions(parts, options).asJava, new FluentCaseInsensitiveStringsMap)
   }
 
-  private def addOptions(basicParts: Array[Part], options: Set[MailgunOption]): Array[Part] = {
+  private def addOptions(basicParts: List[Part], options: Set[MailgunOption]): List[Part] = {
     basicParts ++ options.map { o =>
       Logger.debug(s"Adding option $o: ${o.renderAsApiParameter}")
       o.renderAsApiParameter
