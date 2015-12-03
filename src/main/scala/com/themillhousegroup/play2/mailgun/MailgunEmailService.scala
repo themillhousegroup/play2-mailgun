@@ -35,7 +35,6 @@ class MailgunEmailService extends MailgunResponseJson {
 
       ws.withAuth("api", mailgunApiKey, WSAuthScheme.BASIC)
         .post(requestBytes(mpre))(Writeable.wBytes).flatMap(handleMailgunResponse)
-      //.post(requestBytes(mpre))(Writeable.wBytes, contentType(mpre)).flatMap(handleMailgunResponse)
     }
   }
 
