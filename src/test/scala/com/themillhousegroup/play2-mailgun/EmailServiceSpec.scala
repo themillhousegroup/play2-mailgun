@@ -101,7 +101,6 @@ class EmailServiceSpec extends Specification with Mockito {
     }
 	*/
 
-    /*
     "Use the default sender if not supplied from the message " in {
       val (emailService, mockWS) = givenAnEmailServiceThatReturns(200, "OK", Some("default-sender@from.com"))
       val response = whenTheServiceSends(emailService, noSenderEmailMessage)
@@ -115,6 +114,7 @@ class EmailServiceSpec extends Specification with Mockito {
       val fromField = multipartItems.find(_.getFieldName == "from").get
       fromField.getString must beEqualTo("default-sender@from.com")
     }
+    /*
 */
   }
 

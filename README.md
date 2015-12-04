@@ -15,6 +15,7 @@ Features:
 
 Bring in the library by adding the following to your ```build.sbt```. 
 
+
   - The release repository: 
 
 ```
@@ -22,11 +23,14 @@ Bring in the library by adding the following to your ```build.sbt```.
      "Millhouse Bintray"  at "http://dl.bintray.com/themillhousegroup/maven"
    )
 ```
+There are versions for both Play 2.3 and Play 2.4. Development of the Play 2.3 code has stopped - the version you want is `0.1.256`.
+If you are on Play 2.4, you'll need to use the latest from the `0.2.x` family, as shown below:
+
   - The dependency itself: 
 
 ```
    libraryDependencies ++= Seq(
-     "com.themillhousegroup" %% "play2-mailgun" % "0.1.16"
+     "com.themillhousegroup" %% "play2-mailgun" % "0.2.259"
    )
 
 ```
