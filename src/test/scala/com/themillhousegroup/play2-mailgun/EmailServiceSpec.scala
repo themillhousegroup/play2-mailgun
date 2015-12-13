@@ -20,16 +20,18 @@ class EmailServiceSpec extends Specification with Mockito {
   val noSenderEmailMessage = EmailMessage(None, "to@to.com", "subject", "text", Html("<em>text</em>"))
   val senderEmailMessage = EmailMessage(Some("from@from.com"), "to@to.com", "subject", "text", Html("<em>text</em>"))
 
-  def givenAnEmailServiceThatReturns(statusCode: Int, message: String = "OK", defSender: Option[String] = None): (MailgunEmailService, WSRequestHolder) = {
-    val mockWS = mock[WSRequestHolder]
+  def givenAnEmailServiceThatReturns(statusCode: Int, message: String = "OK", defSender: Option[String] = None): (MailgunEmailService, WSRequest) = {
+    val mockWS = mock[WSRequest]
     val mockResponse = mock[WSResponse]
     mockResponse.json returns Json.obj("message" -> message, "id" -> "abc123")
     mockResponse.status returns statusCode
+    mockWS.withHeaders(any[(String, String)]) returns mockWS
     mockWS.withAuth(any[String], any[String], any[WSAuthScheme]) returns mockWS
     mockWS.post[Array[Byte]](any[Array[Byte]])(any[Writeable[Array[Byte]]]) returns Future.successful(mockResponse)
     new MailgunEmailService {
       override lazy val mailgunApiKey = "apiKey"
       override lazy val defaultSender = defSender
+      override lazy val mailgunUrl = "url"
       override lazy val ws = mockWS
     } -> mockWS
   }
