@@ -57,6 +57,7 @@ class EmailServiceSpec extends Specification with Mockito {
     val ctx = new UploadContext {
       def getCharacterEncoding = "UTF-8"
 
+      // FIXME this is incorrect - boundary needs to be specified
       def getContentType = "multipart/form-data"
 
       def contentLength = theBytes.length

@@ -15,6 +15,7 @@ import java.io.ByteArrayOutputStream
 import com.ning.http.client.providers.jdk.MultipartRequestEntity
 import com.ning.http.client.multipart.{ FilePart, Part }
 import play.api.libs.json
+import java.nio.ByteBuffer
 
 /** For static-style usage: */
 object MailgunEmailService extends MailgunEmailService
@@ -42,7 +43,7 @@ class MailgunEmailService extends MailgunResponseJson {
     }
   }
 
-  private def buildMultipartRequest(sender: String, message: EssentialEmailMessage, options: Set[MailgunOption]): MultipartRequestEntity = {
+  private def buildMultipartRequest(sender: String, message: EssentialEmailMessage, options: Set[MailgunOption]) = {
     //    val logo = Play.getExistingFile("/public/images/logo.png").get
     //    form.bodyPart(new FileDataBodyPart("inline", logo, MediaType.APPLICATION_OCTET_STREAM_TYPE))
     import scala.collection.JavaConverters._
@@ -57,7 +58,9 @@ class MailgunEmailService extends MailgunResponseJson {
     )
     //      new FilePart("attachment", file)
 
-    new MultipartRequestEntity(addOptions(parts, options).asJava, new FluentCaseInsensitiveStringsMap)
+    //    new MultipartRequestEntity(addOptions(parts, options).asJava, new FluentCaseInsensitiveStringsMap)
+    MultipartUtils.newMultipartBody(addOptions(parts, options).asJava, new FluentCaseInsensitiveStringsMap)
+
   }
 
   private def addOptions(basicParts: List[Part], options: Set[MailgunOption]): List[Part] = {
@@ -73,7 +76,23 @@ class MailgunEmailService extends MailgunResponseJson {
     baos.toByteArray
   }
 
+  private def requestBytes(mpb: MultipartBody): Array[Byte] = {
+    val length = mpb.getContentLength.intValue
+    println(s"Content-Length: $length")
+    val bb = ByteBuffer.allocate(length)
+    mpb.read(bb)
+    bb.array
+  }
+
   private def contentType(mpre: MultipartRequestEntity) = {
+    val contentType = mpre.getContentType
+    //    ContentTypeOf(Some(contentType))
+
+    println(s"CT; $contentType")
+    "Content-Type" -> contentType
+  }
+
+  private def contentType(mpre: MultipartBody) = {
     val contentType = mpre.getContentType
     //    ContentTypeOf(Some(contentType))
 
