@@ -22,7 +22,8 @@ object MailgunEmailService extends MailgunEmailService
 class MailgunEmailService extends MailgunResponseJson {
   lazy val mailgunApiKey: String = Play.current.configuration.getString("mailgun.api.key").get
   lazy val defaultSender: Option[String] = Play.current.configuration.getString("mailgun.default.sender")
-  lazy val ws: WSRequest = WS.url(Play.current.configuration.getString("mailgun.api.url").get)
+  lazy val mailgunUrl: String = Play.current.configuration.getString("mailgun.api.url").get
+  lazy val ws: WSRequest = WS.url(mailgunUrl)
 
   /** Sends the message via Mailgun's API, respecting any options provided */
   def send(message: EssentialEmailMessage, options: Set[MailgunOption] = Set()): Future[MailgunResponse] = {
@@ -33,8 +34,11 @@ class MailgunEmailService extends MailgunResponseJson {
       val sender = message.from.getOrElse(defaultSender.get)
       val mpre = buildMultipartRequest(sender, message, options)
 
-      ws.withAuth("api", mailgunApiKey, WSAuthScheme.BASIC)
-        .post(requestBytes(mpre))(Writeable.wBytes).flatMap(handleMailgunResponse)
+      ws
+        .withHeaders(contentType(mpre))
+        .withAuth("api", mailgunApiKey, WSAuthScheme.BASIC)
+        .post(requestBytes(mpre))(Writeable.wBytes)
+        .flatMap(handleMailgunResponse)
     }
   }
 
@@ -71,7 +75,10 @@ class MailgunEmailService extends MailgunResponseJson {
 
   private def contentType(mpre: MultipartRequestEntity) = {
     val contentType = mpre.getContentType
-    ContentTypeOf(Some(contentType))
+    //    ContentTypeOf(Some(contentType))
+
+    println(s"CT; $contentType")
+    "Content-Type" -> contentType
   }
 
   /**
