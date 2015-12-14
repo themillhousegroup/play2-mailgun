@@ -78,25 +78,13 @@ class MailgunEmailService extends MailgunResponseJson {
 
   private def requestBytes(mpb: MultipartBody): Array[Byte] = {
     val length = mpb.getContentLength.intValue
-    println(s"Content-Length: $length")
     val bb = ByteBuffer.allocate(length)
     mpb.read(bb)
     bb.array
   }
 
-  private def contentType(mpre: MultipartRequestEntity) = {
-    val contentType = mpre.getContentType
-    //    ContentTypeOf(Some(contentType))
-
-    println(s"CT; $contentType")
-    "Content-Type" -> contentType
-  }
-
-  private def contentType(mpre: MultipartBody) = {
-    val contentType = mpre.getContentType
-    //    ContentTypeOf(Some(contentType))
-
-    println(s"CT; $contentType")
+  private def contentType(mpb: MultipartBody) = {
+    val contentType = mpb.getContentType
     "Content-Type" -> contentType
   }
 
