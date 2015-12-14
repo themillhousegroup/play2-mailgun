@@ -42,14 +42,20 @@ class EmailServiceSpec extends Specification with Mockito {
     Await.result(emailService.send(msg, options), timeout)
   }
 
-  def andMailgunShouldReceive(ws: WSRequestHolder): List[FileItem] = {
+  def thenMailgunShouldReceive(ws: WSRequest): List[FileItem] = {
     import scala.collection.JavaConverters._
 
     val byteCaptor = ArgumentCaptor.forClass(classOf[Array[Byte]])
+    val headerTupleCaptor = ArgumentCaptor.forClass(classOf[(String, String)])
 
+    there was one(ws).withHeaders(headerTupleCaptor.capture())
     there was one(ws).post(byteCaptor.capture())(any[Writeable[Array[Byte]]])
     val theBytes = byteCaptor.getValue
     theBytes must not beNull
+
+    // Hack to avoid weird casting problems - use toString
+    val ct = headerTupleCaptor.getAllValues.toString.substring(28)
+    val ctHeader = ct.substring(0, ct.length - 3)
 
     println(new String(theBytes))
 
@@ -57,8 +63,7 @@ class EmailServiceSpec extends Specification with Mockito {
     val ctx = new UploadContext {
       def getCharacterEncoding = "UTF-8"
 
-      // FIXME this is incorrect - boundary needs to be specified
-      def getContentType = "multipart/form-data"
+      def getContentType = ctHeader
 
       def contentLength = theBytes.length
       def getContentLength = contentLength.toInt
@@ -71,7 +76,6 @@ class EmailServiceSpec extends Specification with Mockito {
   }
 
   "EmailService" should {
-    /*
     "Bomb out with IllegalStateException if no default from address and none in supplied message" in {
       val (emailService, _) = givenAnEmailServiceThatReturns(200)
       whenTheServiceSends(emailService, noSenderEmailMessage) must throwAn[IllegalStateException]
@@ -94,7 +98,7 @@ class EmailServiceSpec extends Specification with Mockito {
       val response = whenTheServiceSends(emailService, senderEmailMessage)
       response must beEqualTo(MailgunResponse("OK", "abc123"))
 
-      val multipartItems = andMailgunShouldReceive(mockWS)
+      val multipartItems = thenMailgunShouldReceive(mockWS)
 
       multipartItems.size must beEqualTo(5)
       val fieldNames = multipartItems.map(_.getFieldName)
@@ -102,26 +106,22 @@ class EmailServiceSpec extends Specification with Mockito {
       val fromField = multipartItems.find(_.getFieldName == "from").get
       fromField.getString must beEqualTo("from@from.com")
     }
-	*/
-    /*
 
-"Use the default sender if not supplied from the message " in {
- val (emailService, mockWS) = givenAnEmailServiceThatReturns(200, "OK", Some("default-sender@from.com"))
- val response = whenTheServiceSends(emailService, noSenderEmailMessage)
- response must beEqualTo(MailgunResponse("OK", "abc123"))
+    "Use the default sender if not supplied from the message " in {
+      val (emailService, mockWS) = givenAnEmailServiceThatReturns(200, "OK", Some("default-sender@from.com"))
+      val response = whenTheServiceSends(emailService, noSenderEmailMessage)
+      response must beEqualTo(MailgunResponse("OK", "abc123"))
 
- val multipartItems = andMailgunShouldReceive(mockWS)
+      val multipartItems = thenMailgunShouldReceive(mockWS)
 
- multipartItems.size must beEqualTo(5)
- val fieldNames = multipartItems.map(_.getFieldName)
- fieldNames must contain("from")
- val fromField = multipartItems.find(_.getFieldName == "from").get
- fromField.getString must beEqualTo("default-sender@from.com")
-}
-*/
+      multipartItems.size must beEqualTo(5)
+      val fieldNames = multipartItems.map(_.getFieldName)
+      fieldNames must contain("from")
+      val fromField = multipartItems.find(_.getFieldName == "from").get
+      fromField.getString must beEqualTo("default-sender@from.com")
+    }
   }
 
-  /*
   "Option support" should {
     "Pass through the appropriate form part for the 'testmode' option" in {
       val (emailService, mockWS) = givenAnEmailServiceThatReturns(200)
@@ -129,7 +129,7 @@ class EmailServiceSpec extends Specification with Mockito {
       val response = whenTheServiceSends(emailService, senderEmailMessage, Set(SendInTestMode))
       response must beEqualTo(MailgunResponse("OK", "abc123"))
 
-      val multipartItems = andMailgunShouldReceive(mockWS)
+      val multipartItems = thenMailgunShouldReceive(mockWS)
 
       multipartItems must not beEmpty
 
@@ -151,7 +151,7 @@ class EmailServiceSpec extends Specification with Mockito {
       val response = whenTheServiceSends(emailService, senderEmailMessage, Set(sendInOneMinute))
       response must beEqualTo(MailgunResponse("OK", "abc123"))
 
-      val multipartItems = andMailgunShouldReceive(mockWS)
+      val multipartItems = thenMailgunShouldReceive(mockWS)
 
       multipartItems must not beEmpty
 
@@ -163,5 +163,4 @@ class EmailServiceSpec extends Specification with Mockito {
       delTimePart.get.getString must beEqualTo(inOneMinute.toString)
     }
   }
-*/
 }
