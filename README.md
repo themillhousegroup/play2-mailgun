@@ -30,7 +30,7 @@ If you are on Play 2.4, you'll need to use the latest from the `0.2.x` family, a
 
 ```
    libraryDependencies ++= Seq(
-     "com.themillhousegroup" %% "play2-mailgun" % "0.2.259"
+     "com.themillhousegroup" %% "play2-mailgun" % "0.2.263"
    )
 
 ```
@@ -56,7 +56,7 @@ import play.twirl.api.Html
 
 val plainText = "This is the plain text"
 
-val html = Html("<h5>This is <em>actual</em><strong>HTML!</strong></h5>")
+val html = Html("<h5>This is <em>actual</em> <strong>HTML!</strong></h5>")
 
 val m = EmailMessage(
       Some("donotreply@example.com"),
@@ -70,15 +70,37 @@ val m = EmailMessage(
 #### Pass the `EmailMessage` to `MailgunEmailService.send()`
 It returns a `Future[MailgunResponse]` (which you can ignore if you don't care):
 
+##### Play 2.3 static-object style:
+
 ```
 import com.themillhousegroup.play2.mailgun.MailgunEmailService
+
+...
 
 MailgunEmailService.send(m).map { mailgunResponse =>
 	s"id: ${mailgunResponse.id} - message: ${mailgunResponse.message}"
 }
+```
 
+##### Play 2.4 dependency-injected style:
 
 ```
+import play.api.mvc._
+import com.google.inject.Inject
+import com.themillhousegroup.play2.mailgun.MailgunEmailService
+
+class MyController @Inject() (val emailService:MailgunEmailService) extends Controller  {
+
+  ...
+		emailService.send(m).map { mailgunResponse =>
+			s"id: ${mailgunResponse.id} - message: ${mailgunResponse.message}"
+		}
+	...
+}
+```
+
+You can of course use the `MailgunEmailService` in static style, but it's more in keeping with the Play
+philosophy to inject this dependency.
 
 ### Still To-Do
 Use one custom template (with `.scala.email` extension) to define both plain text and HTML message bodies.
