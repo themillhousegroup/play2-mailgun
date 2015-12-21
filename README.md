@@ -59,13 +59,28 @@ val plainText = "This is the plain text"
 val html = Html("<h5>This is <em>actual</em> <strong>HTML!</strong></h5>")
 
 val m = EmailMessage(
-      Some("donotreply@example.com"),
+      Some("sender@example.com"),
       "destination@example.com",
       "This is the subject",
       plainText,
       html
     )
 ```
+
+##### Sender addressing
+You might have noticed the first argument to `EmailMessage` was `Some("sender@example.com")` - 
+if you want emails to come from different senders depending on context, you should pass the sender's
+email address in like this.
+
+If your requirements are simpler, and you just have a global email address that all emails should "come from"
+(like a `donotreply@example.com` or similar) then you can simply set that in your `application.conf` as follows:
+
+```
+mailgun.default.sender="do-not-reply@example.com"
+```
+
+And then just pass `None` as the first argument to `EmailMessage()` - you can still override it on a case-by-case basis if necessary.
+
 
 #### Pass the `EmailMessage` to `MailgunEmailService.send()`
 It returns a `Future[MailgunResponse]` (which you can ignore if you don't care):
@@ -100,7 +115,7 @@ class MyController @Inject() (val emailService:MailgunEmailService) extends Cont
 ```
 
 You can of course use the `MailgunEmailService` in static style, but it's more in keeping with the Play
-philosophy to inject this dependency.
+2.4+ philosophy to inject this dependency.
 
 ### Still To-Do
 Use one custom template (with `.scala.email` extension) to define both plain text and HTML message bodies.
