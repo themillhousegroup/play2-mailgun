@@ -39,7 +39,6 @@ case class EmailMessage(
  * An EssentialEmailMessage
  * which offers the ability to send to multiple recipients
  * in the to:, cc: and bcc: fields
- * of sending to exactly one recipient in the to: field.
  */
 case class MulticastEmailMessage(
     from: Option[String],
