@@ -6,9 +6,10 @@ import com.themillhousegroup.scoup.ScoupImplicits
 
 class DualFormatEmail(buffer: String) extends BufferedContent[DualFormatEmail](scala.collection.immutable.Seq[DualFormatEmail](), buffer) with ScoupImplicits {
   val contentType = MimeTypes.HTML
-	lazy val toPlainText:String = Scoup.parseHTML(buffer).textNodes.map { elem =>
-		elem.text
-	}.mkString
+	lazy val toPlainText:String = ""
+//  Scoup.parseHTML(buffer).textNodes.map { elem =>
+//		elem.text
+//	}.mkString
 }
 
 object DualFormat extends Format[DualFormatEmail] {
