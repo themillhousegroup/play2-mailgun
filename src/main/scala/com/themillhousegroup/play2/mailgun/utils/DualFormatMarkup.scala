@@ -5,9 +5,9 @@ import play.twirl.api.Html
 
 object DualFormatMarkup {
 
-  def h(markup: Node, alternative: String = "")(implicit htmlFormat: Boolean): String = {
+  def h(markup: Node, alternative: String = "")(implicit htmlFormat: Boolean) = {
     if (htmlFormat) {
-      (markup.toString)
+      Html(markup.toString)
     } else {
       alternative
     }
