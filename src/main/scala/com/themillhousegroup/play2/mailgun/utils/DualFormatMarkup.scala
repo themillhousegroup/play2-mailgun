@@ -27,5 +27,5 @@ object DualFormatMarkup {
 
   def tt(text: String)(implicit htmlFormat: Boolean) = h(<tt>{ text }</tt>, text)
 
-  def br(implicit htmlFormat: Boolean) = h(<br/>)
+  def br(implicit htmlFormat: Boolean) = h(<br/>, "\n")
 }
