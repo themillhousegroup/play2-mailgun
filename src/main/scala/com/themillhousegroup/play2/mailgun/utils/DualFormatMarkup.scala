@@ -9,8 +9,8 @@ object DualFormatMarkup {
 
   implicit def str2Dual(s: String): Dual = Dual(Text(s), Html(s), s)
 
-  implicit def renderDual(d: Dual)(implicit htmlFormat: Boolean) =
-    if (htmlFormat) d.html else d.innerText
+  implicit def renderDual(d: Dual)(implicit htmlFormat: Boolean): Html =
+    if (htmlFormat) d.html else Html(d.innerText)
 
   def h(markup: Node, alternative: String = ""): Dual = {
     Dual(markup, Html(markup.toString), alternative)
