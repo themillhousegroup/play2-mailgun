@@ -1,30 +1,33 @@
 package com.themillhousegroup.play2.mailgun.utils
 
-import scala.xml.{ Node, Text }
-import play.twirl.api.Html
+import scala.xml.{ NodeSeq, Node, Text }
+import play.twirl.api.{ HtmlFormat, Html, Content }
 
 object DualFormatMarkup {
 
-  case class Dual(originalMarkup: Node, html: Html, innerText: String)
+  implicit def str2NodeSeq(s: String): NodeSeq =
+    Text(s)
 
-  implicit def str2Dual(s: String): Dual = Dual(Text(s), Html(s), s)
-
-  implicit def renderDual(d: Dual)(implicit htmlFormat: Boolean): Html =
-    if (htmlFormat) d.html else Html(d.innerText)
-
-  def h(markup: Node, alternative: String = ""): Dual = {
-    Dual(markup, Html(markup.toString), alternative)
+  def h(markup: NodeSeq, alternative: String = "")(implicit htmlFormat: Boolean): NodeSeq = {
+    if (htmlFormat) {
+      markup
+    } else {
+      Text(alternative)
+    }
   }
 
-  def a(target: String, text: String) = {
+  def a(target: String, text: String)(implicit htmlFormat: Boolean) = {
     h(<a href={ target }>{ text }</a>, target)
   }
 
-  def em(d: Dual) = h(<em>{ d.originalMarkup }</em>, d.innerText)
+  def em(d: NodeSeq)(implicit htmlFormat: Boolean) =
+    h(<em>{ d }</em>, d.text)
 
-  def strong(d: Dual) = h(<strong>{ d.originalMarkup }</strong>, d.innerText)
+  def strong(d: NodeSeq)(implicit htmlFormat: Boolean) =
+    h(<strong>{ d }</strong>, d.text)
 
-  def tt(d: Dual) = h(<tt>{ d.originalMarkup }</tt>, d.innerText)
+  def tt(d: NodeSeq)(implicit htmlFormat: Boolean) =
+    h(<tt>{ d }</tt>, d.text)
 
-  def br = h(<br/>, "\n")
+  def br(implicit htmlFormat: Boolean) = h(<br/>)
 }
