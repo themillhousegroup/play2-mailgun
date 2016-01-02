@@ -12,7 +12,7 @@ class DualFormatMarkupSpec extends Specification {
     "Allow br elements to be rendered in HTML and plain text" in {
 
       DualFormatMarkup.br(true).toString must beEqualTo("<br/>")
-      DualFormatMarkup.br(false).toString must beEqualTo("\n")
+      DualFormatMarkup.br(false).toString must beEqualTo("")
     }
 
     "Render arbitrary HTML elements expressed as XML" in {
