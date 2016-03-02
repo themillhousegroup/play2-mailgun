@@ -5,6 +5,7 @@ import play.api.{ Play }
 import play.api.Logger
 import scala.concurrent.Future
 import org.apache.commons.lang3.StringUtils
+import play.api._
 import play.api.http._
 import play.api.libs.ws._
 import play.api.Play.current
@@ -16,15 +17,16 @@ import com.ning.http.client.providers.jdk.MultipartRequestEntity
 import com.ning.http.client.multipart.{ FilePart, Part }
 import play.api.libs.json
 import java.nio.ByteBuffer
+import javax.inject.Inject
 
 /** For static-style usage: */
-object MailgunEmailService extends MailgunEmailService
+object MailgunEmailService extends MailgunEmailService(WS.client, Play.current.configuration)
 
-class MailgunEmailService extends MailgunResponseJson {
-  lazy val mailgunApiKey: String = Play.current.configuration.getString("mailgun.api.key").get
-  lazy val defaultSender: Option[String] = Play.current.configuration.getString("mailgun.default.sender")
-  lazy val mailgunUrl: String = Play.current.configuration.getString("mailgun.api.url").get
-  lazy val ws: WSRequest = WS.url(mailgunUrl)
+class MailgunEmailService @Inject() (wsClient: WSClient, configuration: Configuration) extends MailgunResponseJson {
+  lazy val mailgunApiKey: String = configuration.getString("mailgun.api.key").get
+  lazy val defaultSender: Option[String] = configuration.getString("mailgun.default.sender")
+  lazy val mailgunUrl: String = configuration.getString("mailgun.api.url").get
+  lazy val ws: WSRequest = wsClient.url(mailgunUrl)
 
   /** Sends the message via Mailgun's API, respecting any options provided */
   def send(message: EssentialEmailMessage, options: Set[MailgunOption] = Set()): Future[MailgunResponse] = {
