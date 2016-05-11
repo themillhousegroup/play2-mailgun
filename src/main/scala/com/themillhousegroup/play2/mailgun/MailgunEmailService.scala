@@ -20,9 +20,10 @@ import java.nio.ByteBuffer
 import javax.inject.Inject
 
 /** For static-style usage: */
-object MailgunEmailService extends MailgunEmailService(WS.client, Play.current.configuration)
+object MailgunEmailService extends MailgunEmailService(WS.client, Play.current)
 
-class MailgunEmailService @Inject() (wsClient: WSClient, configuration: Configuration) extends MailgunResponseJson {
+class MailgunEmailService @Inject() (wsClient: WSClient, app: Application) extends MailgunResponseJson {
+  lazy val configuration = app.configuration
   lazy val mailgunApiKey: String = configuration.getString("mailgun.api.key").get
   lazy val defaultSender: Option[String] = configuration.getString("mailgun.default.sender")
   lazy val mailgunUrl: String = configuration.getString("mailgun.api.url").get
@@ -40,7 +41,7 @@ class MailgunEmailService @Inject() (wsClient: WSClient, configuration: Configur
       ws
         .withHeaders(contentType(mpre))
         .withAuth("api", mailgunApiKey, WSAuthScheme.BASIC)
-        .post(requestBytes(mpre))(Writeable.wBytes)
+        .post(requestBytes(mpre))(Writeable.wByteArray)
         .flatMap(handleMailgunResponse)
     }
   }
