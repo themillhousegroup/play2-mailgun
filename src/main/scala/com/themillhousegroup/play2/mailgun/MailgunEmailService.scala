@@ -1,28 +1,22 @@
 package com.themillhousegroup.play2.mailgun
 
+import akka.stream.scaladsl.Source
 import play.api.libs.concurrent.Execution.Implicits._
-import play.api.{ Play }
+import play.api.mvc.MultipartFormData.DataPart
+import play.api.{Play}
 import play.api.Logger
 import scala.concurrent.Future
-import org.apache.commons.lang3.StringUtils
 import play.api._
 import play.api.http._
 import play.api.libs.ws._
 import play.api.Play.current
-import com.ning.http.client.FluentCaseInsensitiveStringsMap
-import com.ning.http.client.multipart._
-import java.io.ByteArrayOutputStream
 
-import com.ning.http.client.providers.jdk.MultipartRequestEntity
-import com.ning.http.client.multipart.{ FilePart, Part }
-import play.api.libs.json
-import java.nio.ByteBuffer
 import javax.inject.Inject
 
 /** For static-style usage: */
 object MailgunEmailService extends MailgunEmailService(WS.client, Play.current)
 
-class MailgunEmailService @Inject() (wsClient: WSClient, app: Application) extends MailgunResponseJson {
+class MailgunEmailService @Inject()(wsClient: WSClient, app: Application) extends MailgunResponseJson {
   lazy val configuration = app.configuration
   lazy val mailgunApiKey: String = configuration.getString("mailgun.api.key").get
   lazy val defaultSender: Option[String] = configuration.getString("mailgun.default.sender")
@@ -36,64 +30,35 @@ class MailgunEmailService @Inject() (wsClient: WSClient, app: Application) exten
       Future.failed(new IllegalStateException("From: field is None and no default sender configured"))
     } else {
       val sender = message.from.getOrElse(defaultSender.get)
-      val mpre = buildMultipartRequest(sender, message, options)
 
       ws
-        .withHeaders(contentType(mpre))
         .withAuth("api", mailgunApiKey, WSAuthScheme.BASIC)
-        .post(requestBytes(mpre))(Writeable.wByteArray)
+        .post(buildMultipartRequest(sender, message, options))
         .flatMap(handleMailgunResponse)
     }
   }
 
   private def buildMultipartRequest(sender: String, message: EssentialEmailMessage, options: Set[MailgunOption]) = {
-    //    val logo = Play.getExistingFile("/public/images/logo.png").get
-    //    form.bodyPart(new FileDataBodyPart("inline", logo, MediaType.APPLICATION_OCTET_STREAM_TYPE))
-    import scala.collection.JavaConverters._
+    val parts = List(
+      DataPart("from", sender),
+      DataPart("to", message.to),
+      DataPart("subject", message.subject),
+      DataPart("text", message.text),
+      DataPart("html", message.html.toString()))
 
-    // Use the Ning AsyncHttpClient multipart class to get the bytes
-    val parts = List[Part](
-      new StringPart("from", sender),
-      new StringPart("to", message.to),
-      new StringPart("subject", message.subject),
-      new StringPart("text", message.text),
-      new StringPart("html", message.html.toString())
-    )
-    //      new FilePart("attachment", file)
-
-    //    new MultipartRequestEntity(addOptions(parts, options).asJava, new FluentCaseInsensitiveStringsMap)
-    MultipartUtils.newMultipartBody(addOptions(parts, options).asJava, new FluentCaseInsensitiveStringsMap)
-
+    Source(addOptions(parts, options))
   }
 
-  private def addOptions(basicParts: List[Part], options: Set[MailgunOption]): List[Part] = {
+  private def addOptions(basicParts: List[DataPart], options: Set[MailgunOption]): List[DataPart] = {
     basicParts ++ options.map { o =>
       Logger.debug(s"Adding option $o: ${o.renderAsApiParameter}")
       o.renderAsApiParameter
     }
   }
 
-  private def requestBytes(mpre: MultipartRequestEntity): Array[Byte] = {
-    val baos = new ByteArrayOutputStream
-    mpre.writeRequest(baos)
-    baos.toByteArray
-  }
-
-  private def requestBytes(mpb: MultipartBody): Array[Byte] = {
-    val length = mpb.getContentLength.intValue
-    val bb = ByteBuffer.allocate(length)
-    mpb.read(bb)
-    bb.array
-  }
-
-  private def contentType(mpb: MultipartBody) = {
-    val contentType = mpb.getContentType
-    "Content-Type" -> contentType
-  }
-
   /**
-   * As per https://documentation.mailgun.com/api-intro.html#errors
-   */
+    * As per https://documentation.mailgun.com/api-intro.html#errors
+    */
   private def handleMailgunResponse(response: WSResponse): Future[MailgunResponse] = {
     if (response.status == Status.OK) {
       Future.successful(response.json.as[MailgunResponse])
