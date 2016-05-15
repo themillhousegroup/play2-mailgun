@@ -1,7 +1,7 @@
 name := "play2-mailgun"
 
 val deps = Seq(
-		"com.typesafe.play"       %%  "play-ws"               % "2.4.6"      % "provided",
+		"com.typesafe.play"       %%  "play-ws"               % "2.5.3"      % "provided",
     "org.mockito"                 %   "mockito-all"           % "1.10.19"     % "test",
     "org.specs2"                  %%  "specs2"                % "2.3.13"      % "test",
 		"commons-fileupload" 					% 	"commons-fileupload" 		% "1.3.1"       % "test",
