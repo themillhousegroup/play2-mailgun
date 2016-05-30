@@ -3,20 +3,26 @@ package com.themillhousegroup.play2.mailgun
 import akka.stream.scaladsl.Source
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.mvc.MultipartFormData.DataPart
-import play.api.{Play}
+import play.api.Play
 import play.api.Logger
+
 import scala.concurrent.Future
 import play.api._
 import play.api.http._
 import play.api.libs.ws._
 import play.api.Play.current
-
 import javax.inject.Inject
 
-/** For static-style usage: */
-object MailgunEmailService extends MailgunEmailService(WS.client, Play.current)
+import akka.util.ByteString
+import play.api.mvc.MultipartFormData
 
-class MailgunEmailService @Inject()(wsClient: WSClient, app: Application) extends MailgunResponseJson {
+/** For static-style usage: */
+object MailgunEmailService extends MailgunEmailService(WS.client, Play.current) {
+  type PostData = Source[MultipartFormData.Part[Source[ByteString, _]], _]
+}
+
+class MailgunEmailService @Inject() (wsClient: WSClient, app: Application) extends MailgunResponseJson {
+
   lazy val configuration = app.configuration
   lazy val mailgunApiKey: String = configuration.getString("mailgun.api.key").get
   lazy val defaultSender: Option[String] = configuration.getString("mailgun.default.sender")
@@ -25,11 +31,11 @@ class MailgunEmailService @Inject()(wsClient: WSClient, app: Application) extend
 
   /** Sends the message via Mailgun's API, respecting any options provided */
   def send(message: EssentialEmailMessage, options: Set[MailgunOption] = Set()): Future[MailgunResponse] = {
-
     if (defaultSender.isEmpty && message.from.isEmpty) {
       Future.failed(new IllegalStateException("From: field is None and no default sender configured"))
     } else {
       val sender = message.from.getOrElse(defaultSender.get)
+      println(s"None-Empty and will user sender $sender")
 
       ws
         .withAuth("api", mailgunApiKey, WSAuthScheme.BASIC)
@@ -38,7 +44,7 @@ class MailgunEmailService @Inject()(wsClient: WSClient, app: Application) extend
     }
   }
 
-  private def buildMultipartRequest(sender: String, message: EssentialEmailMessage, options: Set[MailgunOption]) = {
+  private def buildMultipartRequest(sender: String, message: EssentialEmailMessage, options: Set[MailgunOption]): MailgunEmailService.PostData = {
     val parts = List(
       DataPart("from", sender),
       DataPart("to", message.to),
@@ -57,8 +63,8 @@ class MailgunEmailService @Inject()(wsClient: WSClient, app: Application) extend
   }
 
   /**
-    * As per https://documentation.mailgun.com/api-intro.html#errors
-    */
+   * As per https://documentation.mailgun.com/api-intro.html#errors
+   */
   private def handleMailgunResponse(response: WSResponse): Future[MailgunResponse] = {
     if (response.status == Status.OK) {
       Future.successful(response.json.as[MailgunResponse])
