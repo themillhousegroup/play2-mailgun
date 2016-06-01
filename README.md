@@ -13,27 +13,32 @@ Features:
 
 ### Installation
 
-Bring in the library by adding the following to your ```build.sbt```. 
 
-
-  - The release repository: 
+#### Add the release repository
+Add the following to your ```build.sbt```:
 
 ```
    resolvers ++= Seq(
      "Millhouse Bintray"  at "http://dl.bintray.com/themillhousegroup/maven"
    )
 ```
-There are versions for both Play 2.3 and Play 2.4. Development of the Play 2.3 code has stopped - the version you want is `0.1.256`.
-If you are on Play 2.4, you'll need to use the latest from the `0.2.x` family, as shown below:
 
-  - The dependency itself: 
+#### Pick the right version for your Play app
+There are versions available for Play 2.3 to 2.5. 
+
+If you are on Play 2.5, you'll need to use the latest from the `0.3.x` family, as shown below:
 
 ```
    libraryDependencies ++= Seq(
-     "com.themillhousegroup" %% "play2-mailgun" % "0.2.263"
+     "com.themillhousegroup" %% "play2-mailgun" % "0.3.277"
    )
 
 ```
+
+Development of the Play 2.3/4 code has stopped, but the library is still available and works well. Just substitute the appropriate version number in the above specifier:
+
+- For **Play 2.3** the version you want is `0.1.256`
+- For **Play 2.4** the version you want is `0.2.263`
 
 ### Usage
 

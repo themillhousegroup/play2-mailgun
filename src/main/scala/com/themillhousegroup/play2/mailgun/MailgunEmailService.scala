@@ -35,7 +35,6 @@ class MailgunEmailService @Inject() (wsClient: WSClient, app: Application) exten
       Future.failed(new IllegalStateException("From: field is None and no default sender configured"))
     } else {
       val sender = message.from.getOrElse(defaultSender.get)
-      println(s"None-Empty and will user sender $sender")
 
       ws
         .withAuth("api", mailgunApiKey, WSAuthScheme.BASIC)
