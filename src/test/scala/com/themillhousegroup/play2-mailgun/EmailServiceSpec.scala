@@ -35,8 +35,7 @@ class EmailServiceSpec extends Specification with Mockito {
     mockWS.withAuth(any[String], any[String], any[WSAuthScheme]) returns mockWS
     mockWS.post(any[MailgunEmailService.PostData]) returns Future.successful(mockResponse)
 
-    new MailgunEmailService(null, null) {
-      override lazy val configuration = mock[Configuration]
+    new MailgunEmailService(mock[WSClient], mock[Configuration]) {
       override lazy val mailgunApiKey = "apiKey"
       override lazy val defaultSender = defSender
       override lazy val mailgunUrl = "url"

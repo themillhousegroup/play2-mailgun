@@ -17,13 +17,12 @@ import akka.util.ByteString
 import play.api.mvc.MultipartFormData
 
 /** For static-style usage: */
-object MailgunEmailService extends MailgunEmailService(WS.client, Play.current) {
+object MailgunEmailService extends MailgunEmailService(WS.client, Play.current.configuration) {
   type PostData = Source[MultipartFormData.Part[Source[ByteString, _]], _]
 }
 
-class MailgunEmailService @Inject() (wsClient: WSClient, app: Application) extends MailgunResponseJson {
+class MailgunEmailService @Inject() (wsClient: WSClient, configuration: Configuration) extends MailgunResponseJson {
 
-  lazy val configuration = app.configuration
   lazy val mailgunApiKey: String = configuration.getString("mailgun.api.key").get
   lazy val defaultSender: Option[String] = configuration.getString("mailgun.default.sender")
   lazy val mailgunUrl: String = configuration.getString("mailgun.api.url").get
