@@ -52,6 +52,6 @@ case class MulticastEmailMessage(
 
   val to = tos.mkString(", ")
   val cc = ccs.headOption.map(_ => ccs.mkString(", "))
-  val bcc = bccs.headOption.map(_ => ccs.mkString(", "))
+  val bcc = bccs.headOption.map(_ => bccs.mkString(", "))
   val attachments = List()
 }
