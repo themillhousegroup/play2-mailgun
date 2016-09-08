@@ -43,14 +43,19 @@ class MailgunEmailService @Inject() (wsClient: WSClient, configuration: Configur
   }
 
   private def buildMultipartRequest(sender: String, message: EssentialEmailMessage, options: Set[MailgunOption]): MailgunEmailService.PostData = {
-    val parts = List(
+    val requiredParts: List[DataPart] = List(
       DataPart("from", sender),
       DataPart("to", message.to),
       DataPart("subject", message.subject),
       DataPart("text", message.text),
       DataPart("html", message.html.toString()))
 
-    Source(addOptions(parts, options))
+    val optionalParts: List[DataPart] = List(
+      message.cc.map(DataPart("cc", _)),
+      message.bcc.map(DataPart("bcc", _))
+    ).flatten
+
+    Source(addOptions(requiredParts ++ optionalParts, options))
   }
 
   private def addOptions(basicParts: List[DataPart], options: Set[MailgunOption]): List[DataPart] = {
