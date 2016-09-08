@@ -1,19 +1,19 @@
 package com.themillhousegroup.play2.mailgun
 
 import play.api.libs.concurrent.Execution.Implicits._
-import play.api.{ Play }
+import play.api.Play
 import play.api.Logger
+
 import scala.concurrent.Future
 import org.apache.commons.lang3.StringUtils
 import play.api.http._
 import play.api.libs.ws._
 import play.api.Play.current
 import com.ning.http.client.FluentCaseInsensitiveStringsMap
-import com.ning.http.client.multipart._
+import com.ning.http.client.multipart.{ FilePart, Part, StringPart, _ }
 import java.io.ByteArrayOutputStream
 
 import com.ning.http.client.providers.jdk.MultipartRequestEntity
-import com.ning.http.client.multipart.{ FilePart, Part }
 import play.api.libs.json
 import java.nio.ByteBuffer
 
@@ -49,18 +49,21 @@ class MailgunEmailService extends MailgunResponseJson {
     import scala.collection.JavaConverters._
 
     // Use the Ning AsyncHttpClient multipart class to get the bytes
-    val parts = List[Part](
+    val requiredParts = List[Part](
       new StringPart("from", sender),
       new StringPart("to", message.to),
       new StringPart("subject", message.subject),
       new StringPart("text", message.text),
       new StringPart("html", message.html.toString())
     )
-    //      new FilePart("attachment", file)
+
+    val optionalParts: List[Part] = List(
+      message.cc.map(new StringPart("cc", _)),
+      message.bcc.map(new StringPart("bcc", _))
+    ).flatten
 
     //    new MultipartRequestEntity(addOptions(parts, options).asJava, new FluentCaseInsensitiveStringsMap)
-    MultipartUtils.newMultipartBody(addOptions(parts, options).asJava, new FluentCaseInsensitiveStringsMap)
-
+    MultipartUtils.newMultipartBody(addOptions(requiredParts ++ optionalParts, options).asJava, new FluentCaseInsensitiveStringsMap)
   }
 
   private def addOptions(basicParts: List[Part], options: Set[MailgunOption]): List[Part] = {
