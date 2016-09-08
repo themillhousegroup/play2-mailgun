@@ -30,7 +30,7 @@ If you are on Play 2.5, you'll need to use the latest from the `0.3.x` family, a
 
 ```
    libraryDependencies ++= Seq(
-     "com.themillhousegroup" %% "play2-mailgun" % "0.3.277"
+     "com.themillhousegroup" %% "play2-mailgun" % "0.3.280"
    )
 
 ```
@@ -102,7 +102,7 @@ MailgunEmailService.send(m).map { mailgunResponse =>
 }
 ```
 
-##### Play 2.4 dependency-injected style:
+##### Play 2.4+ dependency-injected style:
 
 ```
 import play.api.mvc._
