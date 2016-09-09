@@ -35,10 +35,10 @@ If you are on Play 2.5, you'll need to use the latest from the `0.3.x` family, a
 
 ```
 
-Development of the Play 2.3/4 code has stopped, but the library is still available and works well. Just substitute the appropriate version number in the above specifier:
+Development of new features for the Play 2.3/4 has stopped, but the library is still available and works well. Bugfixes (where applicable) from `master` are backported to the `0.2.x` family (i.e. Play 2.4). Just substitute the appropriate version number in the above specifier:
 
 - For **Play 2.3** the version you want is `0.1.256`
-- For **Play 2.4** the version you want is `0.2.263`
+- For **Play 2.4** the version you want is `0.2.283`
 
 ### Usage
 
