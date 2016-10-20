@@ -30,7 +30,7 @@ If you are on Play 2.5, you'll need to use the latest from the `0.3.x` family, a
 
 ```
    libraryDependencies ++= Seq(
-     "com.themillhousegroup" %% "play2-mailgun" % "0.3.280"
+     "com.themillhousegroup" %% "play2-mailgun" % "0.3.283"
    )
 
 ```
@@ -78,7 +78,7 @@ if you want emails to come from different senders depending on context, you shou
 email address in like this.
 
 If your requirements are simpler, and you just have a global email address that all emails should "come from"
-(like a `donotreply@example.com` or similar) then you can simply set that in your `application.conf` as follows:
+(like a `do-not-reply@example.com` or similar) then you can simply set that in your `application.conf` as follows:
 
 ```
 mailgun.default.sender="do-not-reply@example.com"
@@ -121,6 +121,31 @@ class MyController @Inject() (val emailService:MailgunEmailService) extends Cont
 
 You can of course use the `MailgunEmailService` in static style, but it's more in keeping with the Play
 2.4+ philosophy to inject this dependency.
+
+### Advanced Usage
+
+
+#### Sending to multiple recipients
+Use a `MulticastEmailMessage` instance instead of an `EmailMessage`; it gives you the opportunity to specify multiple **To**, **CC** and **BCC** recipients, and you can also specify a custom **Reply-To** if desired.
+
+```
+import com.themillhousegroup.play2.MulticastEmailMessage
+import play.twirl.api.Html
+
+val multiEmail = MulticastEmailMessage(
+            None,
+            Some("replytome@example.com"),
+            Seq("first@first.com", "second@second.com"),
+            Seq("cc1@cc.com", "cc2@cc.com"),
+            Seq("bcc1@blind.com", "bcc2@blind.com"),
+            subject,
+            plainText,
+            inlined
+          )
+```
+
+You can then pass your `MulticastEmailMessage` to the `MailgunEmailService` as before.
+
 
 ### Still To-Do
 Use one custom template (with `.scala.email` extension) to define both plain text and HTML message bodies.
