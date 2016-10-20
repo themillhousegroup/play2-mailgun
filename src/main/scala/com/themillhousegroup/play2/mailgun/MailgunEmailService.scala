@@ -60,7 +60,7 @@ class MailgunEmailService extends MailgunResponseJson {
     val optionalParts: List[Part] = List(
       message.cc.map(new StringPart("cc", _)),
       message.bcc.map(new StringPart("bcc", _))
-    ).flatten
+    ).flatten ++ message.computedHeaders.map(hdr => new StringPart(s"h:${hdr._1}", hdr._2))
 
     //    new MultipartRequestEntity(addOptions(parts, options).asJava, new FluentCaseInsensitiveStringsMap)
     MultipartUtils.newMultipartBody(addOptions(requiredParts ++ optionalParts, options).asJava, new FluentCaseInsensitiveStringsMap)
