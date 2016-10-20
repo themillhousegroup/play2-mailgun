@@ -30,7 +30,7 @@ If you are on Play 2.5, you'll need to use the latest from the `0.3.x` family, a
 
 ```
    libraryDependencies ++= Seq(
-     "com.themillhousegroup" %% "play2-mailgun" % "0.3.283"
+     "com.themillhousegroup" %% "play2-mailgun" % "0.3.284"
    )
 
 ```
@@ -38,7 +38,7 @@ If you are on Play 2.5, you'll need to use the latest from the `0.3.x` family, a
 Development of new features for the Play 2.3/4 has stopped, but the library is still available and works well. Bugfixes (where applicable) from `master` are backported to the `0.2.x` family (i.e. Play 2.4). Just substitute the appropriate version number in the above specifier:
 
 - For **Play 2.3** the version you want is `0.1.256`
-- For **Play 2.4** the version you want is `0.2.283`
+- For **Play 2.4** the version you want is `0.2.285`
 
 ### Usage
 
@@ -126,26 +126,44 @@ You can of course use the `MailgunEmailService` in static style, but it's more i
 
 
 #### Sending to multiple recipients
-Use a `MulticastEmailMessage` instance instead of an `EmailMessage`; it gives you the opportunity to specify multiple **To**, **CC** and **BCC** recipients, and you can also specify a custom **Reply-To** if desired.
+Use a `MulticastEmailMessage` instance instead of an `EmailMessage` - it gives you the opportunity to specify multiple **To**, **CC** and **BCC** recipients
 
 ```
-import com.themillhousegroup.play2.MulticastEmailMessage
+import com.themillhousegroup.play2.mailgun.MulticastEmailMessage
 import play.twirl.api.Html
 
 val multiEmail = MulticastEmailMessage(
             None,
-            Some("replytome@example.com"),
+            None,
             Seq("first@first.com", "second@second.com"),
             Seq("cc1@cc.com", "cc2@cc.com"),
             Seq("bcc1@blind.com", "bcc2@blind.com"),
             subject,
             plainText,
-            inlined
+            html
           )
 ```
 
 You can then pass your `MulticastEmailMessage` to the `MailgunEmailService` as before.
 
+#### Using a custom `Reply-To` address
+Use a `MulticastEmailMessage` as above, and set the second parameter to a `Some`. If you don't need multiple recipients, just create a `Seq` around the single recipient, or use `Nil` as required:
+
+```
+import com.themillhousegroup.play2.mailgun.MulticastEmailMessage
+import play.twirl.api.Html
+
+val replyToEmail = MulticastEmailMessage(
+            None,
+            Some("replytome@example.com"),
+            Seq("sendtome@recipient.com"),
+            Nil, // No CCs
+            Nil, // No BCCs
+            subject,
+            plainText,
+            html
+          )
+```
 
 ### Still To-Do
 Use one custom template (with `.scala.email` extension) to define both plain text and HTML message bodies.
