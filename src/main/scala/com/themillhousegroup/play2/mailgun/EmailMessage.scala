@@ -9,13 +9,19 @@ import java.io.File
  */
 trait EssentialEmailMessage {
   val from: Option[String]
+  val replyTo: Option[String]
   val to: String
   val cc: Option[String]
   val bcc: Option[String]
   val subject: String
   val text: String
   val html: play.twirl.api.Html
-  val attachments: List[(String, File)]
+  val attachments: Seq[(String, File)]
+  val additionalHeaders: Seq[(String, String)]
+
+  lazy val computedHeaders: Seq[(String, String)] = {
+    additionalHeaders ++ replyTo.map("Reply-To" -> _)
+  }
 }
 
 /**
@@ -32,7 +38,9 @@ case class EmailMessage(
     html: play.twirl.api.Html) extends EssentialEmailMessage {
   val cc = None
   val bcc = None
-  val attachments = List()
+  val replyTo = None
+  val attachments = Seq()
+  val additionalHeaders = Seq()
 }
 
 /**
@@ -43,6 +51,7 @@ case class EmailMessage(
  */
 case class MulticastEmailMessage(
     from: Option[String],
+    replyTo: Option[String],
     tos: Seq[String],
     ccs: Seq[String],
     bccs: Seq[String],
@@ -53,5 +62,6 @@ case class MulticastEmailMessage(
   val to = tos.mkString(", ")
   val cc = ccs.headOption.map(_ => ccs.mkString(", "))
   val bcc = bccs.headOption.map(_ => bccs.mkString(", "))
-  val attachments = List()
+  val attachments = Seq()
+  val additionalHeaders = Seq()
 }

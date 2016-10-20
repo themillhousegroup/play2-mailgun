@@ -25,6 +25,7 @@ class EmailMessageSpec extends Specification {
 
     val multicastEmailMessage = MulticastEmailMessage(
       None,
+      None,
       Seq("to1@to.com", "to2@to.com"),
       Seq("cc1@cc.com", "cc2@cc.com"),
       Seq("bcc1@bcc.com", "bcc2@bcc.com"),
@@ -41,6 +42,24 @@ class EmailMessageSpec extends Specification {
 
     "Set the bcc field to None" in {
       multicastEmailMessage.bcc must beSome("bcc1@bcc.com, bcc2@bcc.com")
+    }
+
+    "Have no additional headers by default" in {
+      multicastEmailMessage.computedHeaders must beEmpty
+    }
+
+    "Make a replyTo field into an additional header" in {
+
+      val multicastEmailMessageWithReplyTo = MulticastEmailMessage(
+        None,
+        Some("reply-to@rt.com"),
+        Seq("to1@to.com", "to2@to.com"),
+        Seq("cc1@cc.com", "cc2@cc.com"),
+        Seq("bcc1@bcc.com", "bcc2@bcc.com"),
+        "subject", "text", Html("<em>text</em>")
+      )
+
+      multicastEmailMessageWithReplyTo.computedHeaders must beEqualTo(Seq("Reply-To" -> "reply-to@rt.com"))
     }
   }
 }
