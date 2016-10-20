@@ -48,12 +48,13 @@ class MailgunEmailService @Inject() (wsClient: WSClient, configuration: Configur
       DataPart("to", message.to),
       DataPart("subject", message.subject),
       DataPart("text", message.text),
-      DataPart("html", message.html.toString()))
+      DataPart("html", message.html.toString())
+    )
 
     val optionalParts: List[DataPart] = List(
       message.cc.map(DataPart("cc", _)),
       message.bcc.map(DataPart("bcc", _))
-    ).flatten
+    ).flatten ++ message.computedHeaders.map(hdr => DataPart(s"h:${hdr._1}", hdr._2))
 
     Source(addOptions(requiredParts ++ optionalParts, options))
   }
