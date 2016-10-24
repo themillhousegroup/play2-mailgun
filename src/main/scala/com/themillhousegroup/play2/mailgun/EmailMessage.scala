@@ -50,9 +50,27 @@ case class EmailMessage(
 
 /**
  * An EssentialEmailMessage
+ * for sending to exactly one recipient in the to: field,
+ * with attachments.
+ */
+case class EmailMessageWithAttachments(
+    from: Option[String],
+    to: String,
+    subject: String,
+    text: String,
+    html: play.twirl.api.Html,
+    attachments: Seq[MailgunAttachment]) extends EssentialEmailMessage {
+  val cc = None
+  val bcc = None
+  val replyTo = None
+  val additionalHeaders = Nil
+}
+
+/**
+ * An EssentialEmailMessage
  * which offers the ability to send to multiple recipients
  * in the to:, cc: and bcc: fields
- * with no attachments.
+ * with optional attachments and extra headers.
  */
 case class MulticastEmailMessage(
     from: Option[String],
@@ -62,11 +80,11 @@ case class MulticastEmailMessage(
     bccs: Seq[String],
     subject: String,
     text: String,
-    html: play.twirl.api.Html) extends EssentialEmailMessage {
+    html: play.twirl.api.Html,
+    attachments: Seq[MailgunAttachment] = Nil,
+    additionalHeaders: Seq[(String, String)] = Nil) extends EssentialEmailMessage {
 
   val to = tos.mkString(", ")
   val cc = ccs.headOption.map(_ => ccs.mkString(", "))
   val bcc = bccs.headOption.map(_ => bccs.mkString(", "))
-  val attachments = Nil
-  val additionalHeaders = Nil
 }
