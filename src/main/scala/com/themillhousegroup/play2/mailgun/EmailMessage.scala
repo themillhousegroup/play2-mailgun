@@ -2,6 +2,11 @@ package com.themillhousegroup.play2.mailgun
 
 import java.io.File
 
+/** Optionally supply a name to use if `file.getName` isn't suitable */
+case class MailgunAttachment(file: File, attachmentName: Option[String] = None, contentType: Option[String] = None) {
+  val fileName = attachmentName.getOrElse(file.getName)
+}
+
 /**
  * The bare minimum of a MailGun API email message.
  * Basically a simplified representation of
@@ -16,7 +21,7 @@ trait EssentialEmailMessage {
   val subject: String
   val text: String
   val html: play.twirl.api.Html
-  val attachments: Seq[(String, File)]
+  val attachments: Seq[MailgunAttachment]
   val additionalHeaders: Seq[(String, String)]
 
   lazy val computedHeaders: Seq[(String, String)] = {
@@ -39,8 +44,8 @@ case class EmailMessage(
   val cc = None
   val bcc = None
   val replyTo = None
-  val attachments = Seq()
-  val additionalHeaders = Seq()
+  val attachments = Nil
+  val additionalHeaders = Nil
 }
 
 /**
@@ -62,6 +67,6 @@ case class MulticastEmailMessage(
   val to = tos.mkString(", ")
   val cc = ccs.headOption.map(_ => ccs.mkString(", "))
   val bcc = bccs.headOption.map(_ => bccs.mkString(", "))
-  val attachments = Seq()
-  val additionalHeaders = Seq()
+  val attachments = Nil
+  val additionalHeaders = Nil
 }
